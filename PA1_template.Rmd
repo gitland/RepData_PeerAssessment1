@@ -1,20 +1,52 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "proj1"
+output: html_document
+---
 
 
-## Loading and preprocessing the data
+```{r}
+data = read.csv("activity.csv")
+data$date = as.Date(data$date)
+library(lubridate)  
+
+dailySteps = as.data.frame(xtabs(steps ~ date, data = data))  
+str(dailySteps)  
+
+library(ggplot2)  
+qplot(Freq, data = dailySteps, binwidth = 800, 
+      main = "Histogram of total steps per day",
+      xlab = "Total steps per day",
+      ylab = "Frequency")
 
 
+mean(dailySteps$Freq)  
+median(dailySteps$Freq)  
 
-## What is mean total number of steps taken per day?
+library(plyr)
+AvgIntervals = ddply(data, .(interval), summarize,avrg=mean(steps, na.rm=T))
+plot(AvgIntervals, type="l")  
+which.max(AvgIntervals$avrg)  
+AvgIntervals[104,]  
+NAs = sum(is.na(data$steps))  
+data222 = data
+
+for (i in 1:nrow(data222)) {
+  j = data222[i,]$interval  
+if(is.na(data222[i,]$steps)) data222[i,]$steps = AvgIntervals[which(AvgIntervals$interval==j),2]  
+}  
+dailySteps222 = as.data.frame(xtabs(steps ~ date, data = data222))  
+qplot(Freq, data = dailySteps222, binwidth = 800, 
+      main = "Histogram of total steps per day",
+      xlab = "Total steps per day",
+      ylab = "Frequency")
+dailyMean222 = mean(dailySteps222$Freq)  
+dailyMedian222 = median(dailySteps222$Freq)  
 
 
+```
 
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+mean total number of steps taken per day is `r dailyMean`  
+median total number of steps taken per day is `r dailyMedian`  
+interval 835 has the highest average number of steps  
+total rows with NAs is `r NAs`
+mean and median total number of steps taken per day after imputation are both 10766.19
